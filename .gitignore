@@ -119,5 +119,3 @@ dist
 
 _testData/
 public/uploads/*
-
-#mongoDbConfig.js
