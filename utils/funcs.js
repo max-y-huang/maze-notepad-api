@@ -24,7 +24,7 @@ const formatToTags = (str, hidden = false) => {
   }), 'name');
 }
 
-const formatToTagNames = (str, hidden = false) => {
+const formatToTagNames = (str) => {
   // Split by spaces and commas, convert to lower case.
   return uniqueArray(str.split(/[\s,]+/).map(tag => {
     return tag.trim().toLowerCase();
