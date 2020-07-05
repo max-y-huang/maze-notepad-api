@@ -15,8 +15,8 @@ router.get('/', async (req, res, next) => {
   if (req.query.tags) {
     // Searching for keywords.
     // Rule: all of the keywords must be at least partially contained in the tags.
-    query.$and = req.query.tags.split(/[\s,]+/).map(tag => {  // All elements in query.$and must be true to satisfy the condition.
-      return { 'tags': new RegExp(`.*${tag}.*`, 'i') };  // Regex searches if string contains tag.
+    query.$and = funcs.formatToTagNames(req.query.tags).map(tag => {  // All elements in query.$and must be true to satisfy the condition.
+      return { '__tag-names': new RegExp(`.*${tag}.*`, 'i') };  // Regex searches if string contains tag.
     });
   };
   let page = req.query.page ? parseInt(req.query.page) : defaultPage;
