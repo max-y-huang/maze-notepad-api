@@ -3,7 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 
 const mdb = require('./../../utils/mongo');
-const upload = multer({ dest: './public/uploads'  });
+const funcs = require('./../../utils/funcs');
+const upload = multer({ dest: './public/uploads' });
 
 const uploadFields = [
   { name: 'maze-file', maxCount: 1 },
@@ -32,17 +33,25 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     return res.status(400).json({ 'result': `Missing the following required parameters: ${missingParams.join(', ')}` });
   }
 
-  let insertObj = {
-    'name': req.body.name,
-    'maze-file-name': req.files['maze-file'][0].filename,
-    'image-file-name': req.files['image-file'][0].filename,
-    'tags': req.body.tags.split(',')
-  };
+  let input__name = req.body.name;
+  let input__mazeFileName = req.files['maze-file'][0].filename;
+  let input__imageFileName = req.files['image-file'][0].filename;
+  let input__tags = funcs.uniqueArrayByKey([
+    ...funcs.formatToTags(req.body.tags),
+    ...funcs.formatToTags(req.body.name, true)
+  ], 'name');
+  let input__tagNames = input__tags.map(x => x.name);
 
   let { db, dbo } = await mdb.getDb().catch(err => res.status(500).json({ 'result': err }));
 
   let insertedId = await new Promise((resolve, reject) => {
-    dbo.collection('mazes').insertOne(insertObj, (err, res) => {
+    dbo.collection('mazes').insertOne({
+      'name': input__name,
+      'maze-file-name': input__mazeFileName,
+      'maze-image-name': input__imageFileName,
+      'tags': input__tags,
+      '__tag-names': input__tagNames
+    }, (err, res) => {
       if (err) {
         reject(err);
       };
