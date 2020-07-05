@@ -35,7 +35,7 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
 
   let input__name = req.body.name;
   let input__mazeFileName = req.files['maze-file'][0].filename;
-  let input__mazeImageName = req.files['image-file'][0].filename;
+  let input__imageFileName = req.files['image-file'][0].filename;
   let input__tags = funcs.uniqueArrayByKey([
     ...funcs.formatToTags(req.body.tags),
     ...funcs.formatToTags(req.body.name, true)
@@ -48,7 +48,7 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     dbo.collection('mazes').insertOne({
       'name': input__name,
       'maze-file-name': input__mazeFileName,
-      'maze-image-name': input__mazeImageName,
+      'image-file-name': input__imageFileName,
       'tags': input__tags,
       '__tag-names': input__tagNames
     }, (err, res) => {
