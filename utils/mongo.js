@@ -1,7 +1,7 @@
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 
-const url = `mongodb+srv://dbUser:${process.env.DB_PASSWORD}@cluster0.rnwa7.mongodb.net/${process.env.DB_USERNAME}?retryWrites=true&w=majority`;
+const url = `mongodb+srv://dbUser:${process.env.MONGODB_PASSWORD}@cluster0.rnwa7.mongodb.net/${process.env.MONGODB_USERNAME}?retryWrites=true&w=majority`;
 const dbName = 'maze-notepad';
 
 const getDb = () => {
