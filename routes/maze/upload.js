@@ -51,8 +51,8 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     dbo.collection('mazes').insertOne({
 
       'name': input__name,
-      'maze-file-name': input__mazeFileName,
-      'image-file-name': input__imageFileName,
+      'maze-file-name': `${input__mazeFileName}.mznp`,
+      'image-file-name': `${input__imageFileName}.png`,
       'tags': input__tags,
       '__tag-names': input__tagNames
       
