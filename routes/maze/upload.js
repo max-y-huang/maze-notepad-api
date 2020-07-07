@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const fs = require('fs');
 
+const aws = require('./../../utils/aws');
 const mdb = require('./../../utils/mongo');
 const funcs = require('./../../utils/funcs');
-const upload = multer({ dest: './public/uploads' });
+const upload = multer({ dest: './uploads' });
 
 const uploadFields = [
   { name: 'maze-file', maxCount: 1 },
@@ -45,18 +47,40 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
   let { db, dbo } = await mdb.getDb().catch(err => res.status(500).json({ 'result': err }));
 
   let insertedId = await new Promise((resolve, reject) => {
+
     dbo.collection('mazes').insertOne({
+
       'name': input__name,
       'maze-file-name': input__mazeFileName,
       'image-file-name': input__imageFileName,
       'tags': input__tags,
       '__tag-names': input__tagNames
+      
     }, (err, res) => {
       if (err) {
         reject(err);
       };
       db.close();
-      resolve(res.insertedId);
+
+      aws.getS3((s3) => {
+
+        let mazeFile = fs.readFileSync(`uploads/${input__mazeFileName}`);
+        let imageFile = fs.readFileSync(`uploads/${input__imageFileName}`);
+        
+        // TODO: Use proper file extension code.
+        // Upload maze and image to AWS S3.
+        s3.upload({ Bucket: 'maze-notepad', Key: `mazes/${input__mazeFileName}.mznp`, Body: mazeFile }, (err, data) => {
+          if (err) {
+            reject(err); 
+          }
+          s3.upload({ Bucket: 'maze-notepad', Key: `images/${input__imageFileName}.png`, Body: imageFile }, (err, data) => {
+            if (err) {
+              reject(err); 
+            }
+            resolve(res.insertedId);
+          });
+        });
+      });
     });
   });
 
