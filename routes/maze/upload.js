@@ -50,8 +50,8 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
   // Insert a maze into the mazes collection.
   let objectForInsertion = {
     'name':            input__name,
-    'maze-file-name':  input__mazeFileName + '.mznp',
-    'image-file-name': input__imageFileName + '.png',
+    'maze-file-name':  input__mazeFileName,
+    'image-file-name': input__imageFileName,
     'tags':            input__tags,
     '__tag-names':     input__tagNames
   };
@@ -70,14 +70,14 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
         let mazeFile = fs.readFileSync(`uploads/${input__mazeFileName}`);
         let imageFile = fs.readFileSync(`uploads/${input__imageFileName}`);
         // Upload maze to AWS S3 bucket.
-        s3.upload({ Bucket: 'maze-notepad', Key: `mazes/${input__mazeFileName}.mznp`, Body: mazeFile }, (err) => {
+        s3.upload({ Bucket: 'maze-notepad', Key: `mazes/${input__mazeFileName}`, Body: mazeFile }, (err) => {
           // Failed to upload maze.
           if (err) {
             // TODO: Delete maze from database.
             return res.status(500).json({ 'result': err });
           }
           // Upload image to AWS S3 bucket.
-          s3.upload({ Bucket: 'maze-notepad', Key: `images/${input__imageFileName}.png`, Body: imageFile }, (err) => {
+          s3.upload({ Bucket: 'maze-notepad', Key: `images/${input__imageFileName}`, Body: imageFile }, (err) => {
             // Failed to upload image.
             if (err) {
               // TODO: Delete maze from database.
