@@ -11,7 +11,7 @@ const getS3 = (callback = null) => {
   if (s3) {
     callback(s3);
   }
-  s3 = new AWS.S3(credentials);
+  s3 = new AWS.S3(credentials);  // TODO: Implement fail.
   callback(s3);
 }
 

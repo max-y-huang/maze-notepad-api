@@ -14,13 +14,13 @@ const uniqueArrayByKey = (arr, key) => {
   return ret;
 }
 
-const formatToTags = (str, hidden = false) => {
+const formatToTags = (str, params = { hidden: false }) => {
   // Split by spaces and commas, convert to lower case.
   return uniqueArrayByKey(str.split(/[\s,]+/).map(tag => {
-    return {
-      name: tag.trim().toLowerCase(),
-      hidden: hidden
-    }
+    return { 
+      ...params,
+      ...{ name: tag.trim().toLowerCase() }
+    };
   }), 'name');
 }
 
@@ -31,4 +31,8 @@ const formatToTagNames = (str) => {
   }));
 }
 
-module.exports = { uniqueArray, uniqueArrayByKey, formatToTags, formatToTagNames };
+const mergeTags = (list1, list2) => {
+  return uniqueArrayByKey([ ...list1, ...list2 ], 'name');
+}
+
+module.exports = { uniqueArray, formatToTags, formatToTagNames, mergeTags };
