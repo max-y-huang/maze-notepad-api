@@ -2,10 +2,11 @@
 
 This is the API for [Maze Notepad JS](https://github.com/max-y-huang/maze-notepad-js/) and [Maze Notepad Store](https://github.com/max-y-huang/maze-notepad-store/).
 
-## Frameworks and Libraries
+## Major Tools
 
-* [Express.js](http://expressjs.com/)
-* [MongoDB](https://www.mongodb.com/)
+* [Express.js](http://expressjs.com/) - Server
+* [MongoDB](https://www.mongodb.com/) - Database
+* [Amazon Web Services](https://aws.amazon.com/) - File Hosting (AWS S3)
 
 ## Development
 
