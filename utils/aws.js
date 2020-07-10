@@ -10,6 +10,7 @@ let s3 = null;
 const getS3 = (callback = null) => {
   if (s3) {
     callback(s3);
+    return;
   }
   s3 = new AWS.S3(credentials);  // TODO: Implement fail.
   callback(s3);

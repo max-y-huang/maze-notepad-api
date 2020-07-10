@@ -37,7 +37,18 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     missingParams.push('tags');
   }
   if (missingParams.length !== 0) {
-    return res.status(400).json({ 'result': `Missing the following required parameters: ${missingParams.join(', ')}` });
+    return res.status(400).json({ 'result': `Missing parameters: ${missingParams.join(', ')}` });
+  }
+
+  let invalidParams = [];
+  if (!req.body.name.match(/[^\s,]/)) {  // Must contain non-space/comma characters.
+    invalidParams.push('name');
+  }
+  if (!req.body.tags.match(/[^\s,]/)) {  // Must contain non-space/comma characters.
+    invalidParams.push('name');
+  }
+  if (invalidParams.length !== 0) {
+    return res.status(400).json({ 'result': `Invalid parameters: ${invalidParams.join(', ')}` });
   }
 
   // Convert input from strings/files to workable data.
@@ -55,43 +66,43 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     'tags':            input__tags,
     '__tag-names':     input__tagNames
   };
-  
-  // Get database.
-  mdb.getDb((db, dbo) => {
-    dbo.collection('mazes').insertOne(objectForInsertion, (err, insertRes) => {
-      // Failed to insert to database,
+
+  // S3 comes before MongoDB because storage residue is acceptable, but database residue is not.
+
+  // Get AWS S3 Bucket.
+  aws.getS3((s3) => {  // TODO: Implement fail.
+    // Retrieve newly uploaded files (directory set with Multer).
+    let mazeFile = fs.readFileSync(`uploads/${input__mazeFileName}`);
+    let imageFile = fs.readFileSync(`uploads/${input__imageFileName}`);
+    // Upload maze to AWS S3 bucket.
+    s3.upload({ Bucket: 'maze-notepad', Key: `mazes/${input__mazeFileName}`, Body: mazeFile }, (err) => {
+      // Failed to upload maze.
       if (err) {
         return res.status(500).json({ 'result': err });
-      };
-      // Close database and get AWS S3 instance.
-      db.close();
-      aws.getS3((s3) => {  // TODO: Implement fail.
-        // Retrieve newly uploaded files (directory set with Multer).
-        let mazeFile = fs.readFileSync(`uploads/${input__mazeFileName}`);
-        let imageFile = fs.readFileSync(`uploads/${input__imageFileName}`);
-        // Upload maze to AWS S3 bucket.
-        s3.upload({ Bucket: 'maze-notepad', Key: `mazes/${input__mazeFileName}`, Body: mazeFile }, (err) => {
-          // Failed to upload maze.
-          if (err) {
-            // TODO: Delete maze from database.
-            return res.status(500).json({ 'result': err });
-          }
-          // Upload image to AWS S3 bucket.
-          s3.upload({ Bucket: 'maze-notepad', Key: `images/${input__imageFileName}`, Body: imageFile }, (err) => {
-            // Failed to upload image.
+      }
+      // Upload image to AWS S3 bucket.
+      s3.upload({ Bucket: 'maze-notepad', Key: `images/${input__imageFileName}`, Body: imageFile }, (err) => {
+        // Failed to upload image.
+        if (err) {
+          return res.status(500).json({ 'result': err });
+        }
+        // Get MongoDb.
+        mdb.getDb((db, dbo) => {
+          dbo.collection('mazes').insertOne(objectForInsertion, (err, insertRes) => {
+            // Failed to insert to database,
             if (err) {
-              // TODO: Delete maze from database.
               return res.status(500).json({ 'result': err });
-            }
+            };
             // Success.
+            db.close();
             return res.status(200).json({ 'result': { 'id': insertRes.insertedId } });
           });
+        }, (err) => {
+          // Failed to get database.
+          return res.status(500).json({ 'result': err });
         });
       });
     });
-  }, (err) => {
-    // Failed to get database.
-    return res.status(500).json({ 'result': err });
   });
 });
 
