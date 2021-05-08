@@ -57,6 +57,7 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
   let input__imageFileName = req.files['image-file'][0].filename;
   let input__tags          = funcs.mergeTags(funcs.formatToTags(req.body.tags), funcs.formatToTags(req.body.name, { hidden: true }));
   let input__tagNames      = input__tags.map(x => x.name);
+  let input__description   = req.body.description ? req.body.description : null;
 
   // Insert a maze into the mazes collection.
   let objectForInsertion = {
@@ -64,7 +65,8 @@ router.post('/', upload.fields(uploadFields), async (req, res, next) => {
     'maze-file-name':  input__mazeFileName,
     'image-file-name': input__imageFileName,
     'tags':            input__tags,
-    '__tag-names':     input__tagNames
+    '__tag-names':     input__tagNames,
+    'description':     input__description
   };
 
   // S3 comes before MongoDB because storage residue is acceptable, but database residue is not.
